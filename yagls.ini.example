@@ -1,0 +1,4 @@
+[Main]
+#DEBUG = true
+URL = http://localhost:5000
+FILEPATH = data

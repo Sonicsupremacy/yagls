@@ -4,6 +4,7 @@ from os import path,makedirs
 import json
 
 from flask import Blueprint, Response, request
+import config
 
 batch_endpoint = Blueprint("batch_endpoint", __name__)
 
@@ -34,15 +35,17 @@ def batch(repo):
 
 def __upload(repo, req_data):
     """ TODO: Validation """
-    if not path.exists(repo):
-        makedirs(repo)
+    fullpath = path.join(config.FILEPATH, repo)
+    if not path.exists(fullpath):
+        makedirs(fullpath)
 
     ret = []
     for obj in req_data:
         obj["actions"] = {"upload": {
-            "href": "http://localhost:5000/{0}/upload/{1}".format(
-                repo, obj["oid"]
-            )
+            #"href": "http://localhost:5000/{0}/upload/{1}".format(
+            #    repo, obj["oid"]
+            #)
+            "href": "/".join([config.URL, repo, "upload", obj["oid"]])
         }}
         ret.append(obj)
 
@@ -51,17 +54,19 @@ def __upload(repo, req_data):
 
 def __download(repo, req_data):
     norepo = False
-    if not path.exists(repo):
+    fullpath = path.join(config.FILEPATH, repo)
+    if not path.exists(fullpath):
         norepo = True
     
     ret = []
     for obj in req_data:
-        if (path.isfile("{0}/{1}".format(repo_path, obj["oid"]))
-                and not norepo):
+        objpath = path.join(fullpath, obj["oid"])
+        if path.isfile(objpath) and not norepo:
             obj["actions"] = {"download": {
-                "href": "http://localhost:5000/{0}/{1}".format(
-                    repo, obj["oid"]
-                )
+                #"href": "http://localhost:5000/{0}/{1}".format(
+                #    repo, obj["oid"]
+                #)
+                "href": "/".join([config.URL, repo, obj["oid"]])
             }}
         else:
             obj["error"] = {
